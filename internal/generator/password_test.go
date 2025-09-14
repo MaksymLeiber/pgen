@@ -73,7 +73,7 @@ func TestGeneratePassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-		password, err := pg.GeneratePassword(tt.masterPassword, tt.serviceName, "testuser", "test-pepper-123", messages)
+			password, err := pg.GeneratePassword(tt.masterPassword, tt.serviceName, "testuser", "test-pepper-123", messages)
 
 			if tt.wantError && err == nil {
 				t.Error("GeneratePassword() ожидалась ошибка, получен nil")
@@ -136,7 +136,7 @@ func TestGeneratePasswordDifferentInputs(t *testing.T) {
 
 func TestGeneratePasswordWithCustomConfig(t *testing.T) {
 	messages := i18n.GetMessages(i18n.English, "test")
-	
+
 	// Быстрые параметры для тестов
 	config := ArgonConfig{
 		Time:    1,
@@ -224,10 +224,10 @@ func TestValidateLength(t *testing.T) {
 
 func TestGenerateFromHash(t *testing.T) {
 	pg := NewPasswordGenerator(10)
-	
+
 	// Тестовый хеш
 	hash := []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
-	
+
 	password1 := pg.generateFromHash(hash)
 	password2 := pg.generateFromHash(hash)
 
@@ -264,7 +264,7 @@ func BenchmarkGeneratePassword(b *testing.B) {
 
 func BenchmarkGeneratePasswordFast(b *testing.B) {
 	messages := i18n.GetMessages(i18n.English, "test")
-	
+
 	// Быстрые параметры для тестирования
 	config := ArgonConfig{
 		Time:    1,
@@ -272,7 +272,7 @@ func BenchmarkGeneratePasswordFast(b *testing.B) {
 		Threads: 1,
 		KeyLen:  32,
 	}
-	
+
 	pg := NewPasswordGeneratorWithConfig(16, config)
 
 	b.ResetTimer()

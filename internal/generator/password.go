@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"golang.org/x/crypto/argon2"
 	"github.com/MaksymLeiber/pgen/internal/i18n"
+	"golang.org/x/crypto/argon2"
 )
 
 const (
