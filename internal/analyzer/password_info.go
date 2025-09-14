@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 // PasswordInfo информация о сгенерированном пароле

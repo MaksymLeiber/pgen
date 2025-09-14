@@ -6,7 +6,7 @@ import (
 	"math/big"
 
 	"golang.org/x/crypto/argon2"
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 const (

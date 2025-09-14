@@ -3,7 +3,7 @@ package generator
 import (
 	"testing"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 func TestNewPasswordGenerator(t *testing.T) {

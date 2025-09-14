@@ -3,7 +3,7 @@ package validator
 import (
 	"testing"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 func TestValidatePasswordStrength(t *testing.T) {

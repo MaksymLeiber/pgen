@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"pgen/internal/config"
-	"pgen/internal/i18n"
-	"pgen/internal/validator"
+	"github.com/MaksymLeiber/pgen/internal/config"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/validator"
 )
 
 func TestDetectLanguageFromArgs(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 type WindowsInstaller struct {

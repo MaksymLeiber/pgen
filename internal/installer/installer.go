@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 // Installer интерфейс для установки приложения

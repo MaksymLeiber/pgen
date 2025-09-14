@@ -14,15 +14,15 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"pgen/internal/analyzer"
-	"pgen/internal/clipboard"
-	"pgen/internal/colors"
-	"pgen/internal/config"
-	"pgen/internal/generator"
-	"pgen/internal/i18n"
-	"pgen/internal/input"
-	"pgen/internal/installer"
-	"pgen/internal/validator"
+	"github.com/MaksymLeiber/pgen/internal/analyzer"
+	"github.com/MaksymLeiber/pgen/internal/clipboard"
+	"github.com/MaksymLeiber/pgen/internal/colors"
+	"github.com/MaksymLeiber/pgen/internal/config"
+	"github.com/MaksymLeiber/pgen/internal/generator"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/input"
+	"github.com/MaksymLeiber/pgen/internal/installer"
+	"github.com/MaksymLeiber/pgen/internal/validator"
 )
 
 var (

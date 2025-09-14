@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 type UnixInstaller struct {

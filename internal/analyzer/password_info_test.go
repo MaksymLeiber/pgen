@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 func TestAnalyzePassword(t *testing.T) {

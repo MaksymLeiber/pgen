@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
 
 // Config структура конфигурации
