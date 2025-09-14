@@ -552,8 +552,8 @@ func BenchmarkDetectLanguageFromEnv(b *testing.B) {
 
 func TestGetRandomTip(t *testing.T) {
 	// Тест метода GetRandomTip
-	ruMessages := GetMessages(Russian, "1.0.0")
-	enMessages := GetMessages(English, "1.0.0")
+	ruMessages := GetMessages(Russian, "1.0.1")
+	enMessages := GetMessages(English, "1.0.1")
 
 	// Проверяем, что метод возвращает непустую строку
 	ruTip := ruMessages.GetRandomTip()
@@ -591,8 +591,8 @@ func TestGetRandomTip(t *testing.T) {
 
 func TestTipsArrays(t *testing.T) {
 	// Тест массивов советов
-	ruMessages := GetMessages(Russian, "1.0.0")
-	enMessages := GetMessages(English, "1.0.0")
+	ruMessages := GetMessages(Russian, "1.0.1")
+	enMessages := GetMessages(English, "1.0.1")
 
 	// Проверяем, что массивы Tips заполнены
 	if len(ruMessages.Tips) == 0 {
