@@ -188,7 +188,7 @@ func runRootCommand(cmd *cobra.Command, args []string) {
 		Threads: cfg.ArgonThreads,
 		KeyLen:  cfg.ArgonKeyLen,
 	})
-	password, err := gen.GeneratePassword(masterPassword, serviceName, messages)
+	password, err := gen.GeneratePassword(masterPassword, serviceName, cfg.Username, cfg.Pepper, messages)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s %v\n", colors.ErrorMsg(messages.Errors.GenerationError+":"), err)
 		os.Exit(1)

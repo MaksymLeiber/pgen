@@ -51,8 +51,8 @@ func NewPasswordGeneratorWithConfig(length int, argonConfig ArgonConfig) *Passwo
 	}
 }
 
-func (pg *PasswordGenerator) GeneratePassword(masterPassword, serviceName string, messages *i18n.Messages) (string, error) {
-	salt := createSalt(serviceName)
+func (pg *PasswordGenerator) GeneratePassword(masterPassword, serviceName, username, pepper string, messages *i18n.Messages) (string, error) {
+	salt := createSalt(serviceName, username, pepper)
 
 	// Определяем параметрыы аrgon2
 	var argonTime uint32 = 3
@@ -124,9 +124,9 @@ func (pg *PasswordGenerator) generateFromHash(hash []byte) string {
 	return string(password)
 }
 
-func createSalt(serviceName string) []byte {
-	// Добавляем фиксированную энтропию для защиты от радужных таблиц (атаки)
-	baseText := "PGenCLI2025Salt:" + serviceName
+func createSalt(serviceName, username, pepper string) []byte {
+	// Улучшенная генерация salt с версионированием и дополнительной энтропией
+	baseText := "PGenCLI|v1|" + serviceName + "|" + username + "|" + pepper
 	hash := sha256.Sum256([]byte(baseText))
 	return hash[:saltLength]
 }

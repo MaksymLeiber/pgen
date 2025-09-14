@@ -17,6 +17,7 @@ go.work
 # Build artifacts - исключаем результаты сборки
 build/
 dist/
+doc/
 
 # IDE files
 .vscode/

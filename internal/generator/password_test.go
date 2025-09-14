@@ -73,7 +73,7 @@ func TestGeneratePassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			password, err := pg.GeneratePassword(tt.masterPassword, tt.serviceName, messages)
+		password, err := pg.GeneratePassword(tt.masterPassword, tt.serviceName, "testuser", "test-pepper-123", messages)
 
 			if tt.wantError && err == nil {
 				t.Error("GeneratePassword() ожидалась ошибка, получен nil")
@@ -104,9 +104,9 @@ func TestGeneratePasswordDeterministic(t *testing.T) {
 	serviceName := "example.com"
 
 	// Генерируем пароль несколько раз
-	password1, err1 := pg.GeneratePassword(masterPassword, serviceName, messages)
-	password2, err2 := pg.GeneratePassword(masterPassword, serviceName, messages)
-	password3, err3 := pg.GeneratePassword(masterPassword, serviceName, messages)
+	password1, err1 := pg.GeneratePassword(masterPassword, serviceName, "testuser", "test-pepper-123", messages)
+	password2, err2 := pg.GeneratePassword(masterPassword, serviceName, "testuser", "test-pepper-123", messages)
+	password3, err3 := pg.GeneratePassword(masterPassword, serviceName, "testuser", "test-pepper-123", messages)
 
 	if err1 != nil || err2 != nil || err3 != nil {
 		t.Fatalf("GeneratePassword() ошибки: %v, %v, %v", err1, err2, err3)
@@ -121,9 +121,9 @@ func TestGeneratePasswordDifferentInputs(t *testing.T) {
 	messages := i18n.GetMessages(i18n.English, "test")
 	pg := NewPasswordGenerator(16)
 
-	password1, _ := pg.GeneratePassword("master1", "service1", messages)
-	password2, _ := pg.GeneratePassword("master2", "service1", messages)
-	password3, _ := pg.GeneratePassword("master1", "service2", messages)
+	password1, _ := pg.GeneratePassword("master1", "service1", "user1", "pepper1", messages)
+	password2, _ := pg.GeneratePassword("master2", "service1", "user1", "pepper1", messages)
+	password3, _ := pg.GeneratePassword("master1", "service2", "user1", "pepper1", messages)
 
 	if password1 == password2 {
 		t.Error("Разные мастер-пароли должны генерировать разные пароли")
@@ -146,7 +146,7 @@ func TestGeneratePasswordWithCustomConfig(t *testing.T) {
 	}
 
 	pg := NewPasswordGeneratorWithConfig(20, config)
-	password, err := pg.GeneratePassword("testmaster", "testservice", messages)
+	password, err := pg.GeneratePassword("testmaster", "testservice", "testuser", "test-pepper-456", messages)
 
 	if err != nil {
 		t.Fatalf("GeneratePassword() ошибка: %v", err)
@@ -169,8 +169,8 @@ func TestCreateSalt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.serviceName, func(t *testing.T) {
-			salt1 := createSalt(tt.serviceName)
-			salt2 := createSalt(tt.serviceName)
+			salt1 := createSalt(tt.serviceName, "testuser", "test-pepper")
+			salt2 := createSalt(tt.serviceName, "testuser", "test-pepper")
 
 			if len(salt1) != saltLength {
 				t.Errorf("createSalt() длина = %v, ожидается %v", len(salt1), saltLength)
@@ -184,8 +184,8 @@ func TestCreateSalt(t *testing.T) {
 	}
 
 	// Проверяем, что разные сервисы дают разные соли
-	salt1 := createSalt("service1")
-	salt2 := createSalt("service2")
+	salt1 := createSalt("service1", "user1", "pepper1")
+	salt2 := createSalt("service2", "user1", "pepper1")
 
 	if string(salt1) == string(salt2) {
 		t.Error("Разные сервисы должны генерировать разные соли")
@@ -258,7 +258,7 @@ func BenchmarkGeneratePassword(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = pg.GeneratePassword("benchmark", "test", messages)
+		_, _ = pg.GeneratePassword("benchmark", "test", "benchuser", "bench-pepper", messages)
 	}
 }
 
@@ -277,6 +277,6 @@ func BenchmarkGeneratePasswordFast(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = pg.GeneratePassword("benchmark", "test", messages)
+		_, _ = pg.GeneratePassword("benchmark", "test", "benchuser", "bench-pepper", messages)
 	}
 }

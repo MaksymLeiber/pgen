@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,6 +11,16 @@ import (
 
 	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
+
+// generateRandomPepper генерирует случайный pepper для улучшения безопасности salt
+func generateRandomPepper() string {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		// В случае ошибки возвращаем фиксированный pepper
+		return "fallback-pepper-123456"
+	}
+	return hex.EncodeToString(bytes)
+}
 
 // Config структура конфигурации
 type Config struct {
@@ -31,6 +43,10 @@ type Config struct {
 	ShowPasswordInfo bool `json:"show_password_info"`
 	ColorOutput      bool `json:"color_output"`
 
+	// Новые настройки для улучшенной генерации salt
+	Username string `json:"username"`
+	Pepper   string `json:"pepper"`
+
 	// Версия конфигурации для совместимости
 	Version string `json:"config_version"`
 }
@@ -49,6 +65,8 @@ func DefaultConfig() *Config {
 		DefaultClearTimeout: 45,
 		ShowPasswordInfo:    false,
 		ColorOutput:         true,
+		Username:            "user",
+		Pepper:              generateRandomPepper(),
 		Version:             "1.0",
 	}
 }
@@ -169,6 +187,12 @@ func (c *Config) validate() {
 	}
 	if c.Version == "" {
 		c.Version = "1.0"
+	}
+	if c.Username == "" {
+		c.Username = "user"
+	}
+	if c.Pepper == "" {
+		c.Pepper = generateRandomPepper()
 	}
 }
 
