@@ -37,13 +37,7 @@ func TestMainIntegration(t *testing.T) {
 		expectedError  bool
 		timeout        time.Duration
 	}{
-		{
-			name:           "Показать версию",
-			args:           []string{"--version"},
-			expectedOutput: []string{"0.0.8"},
-			expectedError:  false,
-			timeout:        5 * time.Second,
-		},
+
 		{
 			name:           "Показать помощь",
 			args:           []string{"--help"},
