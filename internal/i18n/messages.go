@@ -1,8 +1,10 @@
 package i18n
 
 import (
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 type Language string
@@ -11,6 +13,17 @@ const (
 	Russian Language = "ru"
 	English Language = "en"
 )
+
+func (m *Messages) GetRandomTip() string {
+	if len(m.Tips) == 0 {
+		return m.Tip // Фолбэк к обычному совету
+	}
+	
+	// генератор случайных чисел на основе времени для подсказок 
+	rand.Seed(time.Now().UnixNano())
+	index := rand.Intn(len(m.Tips))
+	return m.Tips[index]
+}
 
 type Messages struct {
 	EnterMasterPassword   string
@@ -31,6 +44,7 @@ type Messages struct {
 	LengthLabel           string
 	CharactersLabel       string
 	Tip                   string
+	Tips                  []string
 	About                 string
 
 	// Установка приложения
@@ -239,6 +253,20 @@ func GetMessages(lang Language, version string) *Messages {
 			LengthLabel:           "Длина:",
 			CharactersLabel:       "символов",
 			Tip:                   "💡 Совет: Используйте одинаковые мастер-пароль и название сервиса для получения того же пароля.",
+			Tips: []string{
+				"💡 Совет: Используйте одинаковые мастер-пароль и название сервиса для получения того же пароля.",
+				"🔒 Совет: Используйте сильный мастер-пароль - он защищает все ваши сервисы.",
+				"📝 Совет: Запомните свой мастер-пароль надежно - никуда его не записывайте!",
+				"⚡ Совет: Используйте описательные имена сервисов: 'gmail.com', 'work-email', 'banking'.",
+				"📱 Совет: Можно создавать разные пароли для разных целей: работа, личное, банки.",
+				"🔄 Совет: Меняйте мастер-пароль раз в год для максимальной безопасности.",
+				"📊 Совет: Увеличьте длину пароля для важных сервисов: --length 24.",
+				"📎 Совет: Используйте флаг --copy для автоматического копирования в буфер.",
+				"🚫 Совет: Никому не говорите свой мастер-пароль - это ключ ко всем вашим аккаунтам!",
+				"🌍 Совет: PGen работает оффлайн - ваши пароли никуда не отправляются!",
+				"⚙️ Совет: Настройте конфигурацию: pgen config set default_length 20.",
+				"📲 Совет: Можно сохранить список сервисов в заметках для удобства.",
+			},
 
 			MasterPasswordStrength:     "Сила мастер-пароля:",
 			PasswordStrengthWeak:       "🔴 Очень слабый",
@@ -512,6 +540,20 @@ func GetMessages(lang Language, version string) *Messages {
 			LengthLabel:           "Length:",
 			CharactersLabel:       "characters",
 			Tip:                   "💡 Tip: Use the same master password and service name to get the same password.",
+			Tips: []string{
+				"💡 Tip: Use the same master password and service name to get the same password.",
+				"🔒 Tip: Use a strong master password - it protects all your services.",
+				"📝 Tip: Remember your master password securely - never write it down!",
+				"⚡ Tip: Use descriptive service names: 'gmail.com', 'work-email', 'banking'.",
+				"📱 Tip: Create different passwords for different purposes: work, personal, banking.",
+				"🔄 Tip: Change your master password once a year for maximum security.",
+				"📊 Tip: Increase password length for important services: --length 24.",
+				"📎 Tip: Use --copy flag for automatic clipboard copying.",
+				"🚫 Tip: Never share your master password - it's the key to all your accounts!",
+				"🌍 Tip: PGen works offline - your passwords never leave your device!",
+				"⚙️ Tip: Configure settings: pgen config set default_length 20.",
+				"📲 Tip: Keep a list of your services in notes for convenience.",
+			},
 
 			MasterPasswordStrength:     "Master password strength:",
 			PasswordStrengthWeak:       "🔴 Very weak",

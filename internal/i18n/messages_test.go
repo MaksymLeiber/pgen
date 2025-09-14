@@ -18,7 +18,7 @@ func TestLanguageConstants(t *testing.T) {
 
 func TestGetMessagesRussian(t *testing.T) {
 	// Тест получения русских сообщений
-	version := "1.0.0"
+	version := "1.0.1"
 	messages := GetMessages(Russian, version)
 
 	if messages == nil {
@@ -547,5 +547,118 @@ func BenchmarkDetectLanguageFromEnv(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = DetectLanguage("")
+	}
+}
+
+func TestGetRandomTip(t *testing.T) {
+	// Тест метода GetRandomTip
+	ruMessages := GetMessages(Russian, "1.0.0")
+	enMessages := GetMessages(English, "1.0.0")
+
+	// Проверяем, что метод возвращает непустую строку
+	ruTip := ruMessages.GetRandomTip()
+	if ruTip == "" {
+		t.Error("GetRandomTip() для русского языка не должен возвращать пустую строку")
+	}
+
+	enTip := enMessages.GetRandomTip()
+	if enTip == "" {
+		t.Error("GetRandomTip() для английского языка не должен возвращать пустую строку")
+	}
+
+	// Проверяем, что возвращается совет (должен содержать emoji или ключевые слова)
+	if !strings.Contains(ruTip, "💡") && !strings.Contains(strings.ToLower(ruTip), "совет") {
+		t.Errorf("Русский совет должен содержать emoji или слово 'совет': %q", ruTip)
+	}
+
+	if !strings.Contains(enTip, "💡") && !strings.Contains(strings.ToLower(enTip), "tip") {
+		t.Errorf("Английский совет должен содержать emoji или слово 'tip': %q", enTip)
+	}
+
+	// Проверяем, что при многократном вызове могут возвращаться разные советы
+	// (хотя из-за времени в качестве seed может быть одинаковый результат)
+	tips := make(map[string]bool)
+	for i := 0; i < 50; i++ {
+		tip := ruMessages.GetRandomTip()
+		tips[tip] = true
+	}
+
+	// Должно быть больше одного уникального совета (при достаточном количестве попыток)
+	if len(tips) < 2 && len(ruMessages.Tips) > 1 {
+		t.Logf("Предупреждение: получен только %d уникальный совет из %d попыток (может быть из-за одинакового времени)", len(tips), 50)
+	}
+}
+
+func TestTipsArrays(t *testing.T) {
+	// Тест массивов советов
+	ruMessages := GetMessages(Russian, "1.0.0")
+	enMessages := GetMessages(English, "1.0.0")
+
+	// Проверяем, что массивы Tips заполнены
+	if len(ruMessages.Tips) == 0 {
+		t.Error("Массив Tips для русского языка не должен быть пустым")
+	}
+
+	if len(enMessages.Tips) == 0 {
+		t.Error("Массив Tips для английского языка не должен быть пустым")
+	}
+
+	// Проверяем, что количество советов одинаково в обоих языках
+	if len(ruMessages.Tips) != len(enMessages.Tips) {
+		t.Errorf("Количество советов должно быть одинаково: русский=%d, английский=%d", 
+			len(ruMessages.Tips), len(enMessages.Tips))
+	}
+
+	// Проверяем, что все советы непустые
+	for i, tip := range ruMessages.Tips {
+		if tip == "" {
+			t.Errorf("Русский совет #%d не должен быть пустым", i)
+		}
+		if !strings.Contains(tip, "💡") && !strings.Contains(strings.ToLower(tip), "совет") {
+			t.Errorf("Русский совет #%d должен содержать emoji или слово 'совет': %q", i, tip)
+		}
+	}
+
+	for i, tip := range enMessages.Tips {
+		if tip == "" {
+			t.Errorf("Английский совет #%d не должен быть пустым", i)
+		}
+		if !strings.Contains(tip, "💡") && !strings.Contains(strings.ToLower(tip), "tip") {
+			t.Errorf("Английский совет #%d должен содержать emoji или слово 'tip': %q", i, tip)
+		}
+	}
+
+	// Проверяем, что есть разнообразие в советах (не все одинаковые)
+	uniqueRuTips := make(map[string]bool)
+	for _, tip := range ruMessages.Tips {
+		uniqueRuTips[tip] = true
+	}
+
+	uniqueEnTips := make(map[string]bool)
+	for _, tip := range enMessages.Tips {
+		uniqueEnTips[tip] = true
+	}
+
+	if len(uniqueRuTips) != len(ruMessages.Tips) {
+		t.Errorf("Есть дублирующиеся русские советы: уникальных=%d, всего=%d", 
+			len(uniqueRuTips), len(ruMessages.Tips))
+	}
+
+	if len(uniqueEnTips) != len(enMessages.Tips) {
+		t.Errorf("Есть дублирующиеся английские советы: уникальных=%d, всего=%d", 
+			len(uniqueEnTips), len(enMessages.Tips))
+	}
+}
+
+func TestGetRandomTipFallback(t *testing.T) {
+	// Тест fallback к обычному совету если Tips пустой
+	messages := &Messages{
+		Tip: "Fallback совет",
+		Tips: []string{}, // Пустой массив
+	}
+
+	tip := messages.GetRandomTip()
+	if tip != "Fallback совет" {
+		t.Errorf("GetRandomTip() должен возвращать fallback совет когда Tips пустой, получено: %q", tip)
 	}
 }

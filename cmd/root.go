@@ -228,7 +228,7 @@ func runRootCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	fmt.Println(colors.SubtleMsg("\n" + messages.Tip))
+	fmt.Println(colors.SubtleMsg("\n" + messages.GetRandomTip()))
 }
 
 // runInstallation выполняет установку приложения в системные пути
