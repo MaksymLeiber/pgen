@@ -611,7 +611,126 @@ func TestConfigValidateEdgeCases(t *testing.T) {
 	}
 }
 
-// Бенчмарки для измерения производительности
+func TestProfileStatistics(t *testing.T) {
+	// Тест статистики профиля
+	config := DefaultConfig()
+
+	// Проверяем начальные значения
+	if config.ProfileStats.PasswordsGenerated != 0 {
+		t.Errorf("Начальное количество паролей = %d, ожидается 0", config.ProfileStats.PasswordsGenerated)
+	}
+
+	if config.ProfileStats.CurrentProfile != "default" {
+		t.Errorf("Начальный профиль = %q, ожидается 'default'", config.ProfileStats.CurrentProfile)
+	}
+
+	if config.ProfileStats.FirstUsed != nil {
+		t.Error("Начальная дата первого использования должна быть nil")
+	}
+
+	if config.ProfileStats.LastUsed != nil {
+		t.Error("Начальная дата последнего использования должна быть nil")
+	}
+}
+
+func TestIncrementPasswordCount(t *testing.T) {
+	// Тест инкремента счетчика паролей с реальным временем генерации
+	config := DefaultConfig()
+
+	// Проверяем начальное состояние
+	if config.ProfileStats.PasswordsGenerated != 0 {
+		t.Fatalf("Начальное количество паролей = %d, ожидается 0", config.ProfileStats.PasswordsGenerated)
+	}
+
+	if config.ProfileStats.FirstUsed != nil {
+		t.Fatal("Начальная FirstUsed должна быть nil")
+	}
+
+	if config.ProfileStats.LastUsed != nil {
+		t.Fatal("Начальная LastUsed должна быть nil")
+	}
+
+	if config.ProfileStats.TotalGenerationTime != 0 {
+		t.Fatalf("Начальное общее время генерации = %d, ожидается 0", config.ProfileStats.TotalGenerationTime)
+	}
+
+	if config.ProfileStats.AverageGenerationTime != 0 {
+		t.Fatalf("Начальное среднее время генерации = %d, ожидается 0", config.ProfileStats.AverageGenerationTime)
+	}
+
+	// Инкрементируем счетчик с временем генерации 100ms
+	config.IncrementPasswordCount(100)
+
+	// Проверяем изменения после первой генерации
+	if config.ProfileStats.PasswordsGenerated != 1 {
+		t.Errorf("После инкремента количество паролей = %d, ожидается 1", config.ProfileStats.PasswordsGenerated)
+	}
+
+	if config.ProfileStats.FirstUsed == nil {
+		t.Error("FirstUsed должна быть установлена после первого инкремента")
+	}
+
+	if config.ProfileStats.LastUsed == nil {
+		t.Error("LastUsed должна быть установлена после инкремента")
+	}
+
+	if config.ProfileStats.TotalGenerationTime != 100 {
+		t.Errorf("Общее время генерации = %d, ожидается 100", config.ProfileStats.TotalGenerationTime)
+	}
+
+	if config.ProfileStats.AverageGenerationTime != 100 {
+		t.Errorf("Среднее время генерации = %d, ожидается 100", config.ProfileStats.AverageGenerationTime)
+	}
+
+	// Второе инкрементирование с временем генерации 200ms
+	firstUsedTime := *config.ProfileStats.FirstUsed
+	config.IncrementPasswordCount(200)
+
+	if config.ProfileStats.PasswordsGenerated != 2 {
+		t.Errorf("После второго инкремента количество паролей = %d, ожидается 2", config.ProfileStats.PasswordsGenerated)
+	}
+
+	// FirstUsed не должна изменяться
+	if !config.ProfileStats.FirstUsed.Equal(firstUsedTime) {
+		t.Error("FirstUsed не должна изменяться при повторных инкрементах")
+	}
+
+	// LastUsed должна обновляться
+	if config.ProfileStats.LastUsed.Before(firstUsedTime) {
+		t.Error("LastUsed должна обновляться при каждом инкременте")
+	}
+
+	// Проверяем расчет среднего времени
+	expectedTotal := int64(300)   // 100 + 200
+	expectedAverage := int64(150) // 300 / 2
+
+	if config.ProfileStats.TotalGenerationTime != expectedTotal {
+		t.Errorf("Общее время генерации = %d, ожидается %d", config.ProfileStats.TotalGenerationTime, expectedTotal)
+	}
+
+	if config.ProfileStats.AverageGenerationTime != expectedAverage {
+		t.Errorf("Среднее время генерации = %d, ожидается %d", config.ProfileStats.AverageGenerationTime, expectedAverage)
+	}
+
+	// Третье инкрементирование с временем генерации 60ms
+	config.IncrementPasswordCount(60)
+
+	if config.ProfileStats.PasswordsGenerated != 3 {
+		t.Errorf("После третьего инкремента количество паролей = %d, ожидается 3", config.ProfileStats.PasswordsGenerated)
+	}
+
+	// Проверяем расчет среднего времени после третьей генерации
+	expectedTotal = int64(360)   // 100 + 200 + 60
+	expectedAverage = int64(120) // 360 / 3
+
+	if config.ProfileStats.TotalGenerationTime != expectedTotal {
+		t.Errorf("Общее время генерации = %d, ожидается %d", config.ProfileStats.TotalGenerationTime, expectedTotal)
+	}
+
+	if config.ProfileStats.AverageGenerationTime != expectedAverage {
+		t.Errorf("Среднее время генерации = %d, ожидается %d", config.ProfileStats.AverageGenerationTime, expectedAverage)
+	}
+}
 func BenchmarkDefaultConfig(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

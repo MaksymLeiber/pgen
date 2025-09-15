@@ -5,7 +5,7 @@ REM ==============================
 REM Скрипт для кроссплатформенной сборки PGen CLI
 REM ==============================
 
-set VERSION=1.1.0
+set VERSION=1.2.0
 set APP_NAME=pgen
 set BUILD_DIR=build
 

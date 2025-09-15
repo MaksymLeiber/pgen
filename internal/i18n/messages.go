@@ -178,6 +178,87 @@ type Messages struct {
 	ConfigCharsetValues        string
 	ConfigTimeoutRange         string
 
+	// Метрики и статистика
+	MetricsTitle       string
+	ProfileStatistics  string
+	SecurityMetrics    string
+	PerformanceMetrics string
+	UsagePatterns      string
+	SystemInformation  string
+	SessionMetrics     string
+	QualityAnalysis    string
+	TrendsAndForecasts string
+
+	// Детали метрик
+	PasswordsGenerated     string
+	FirstUsed              string
+	LastUsed               string
+	ActiveDays             string
+	AverageUsage           string
+	AverageEntropy         string
+	StrengthDistribution   string
+	CrackTimeMedian        string
+	WeakestPassword        string
+	StrongestPassword      string
+	AverageGenTime         string
+	ArgonParameters        string
+	MemoryUsage            string
+	SecureStringActive     string
+	TopServices            string
+	PreferredLength        string
+	TimeActivity           string
+	TotalSessions          string
+	AverageSessionDuration string
+	PasswordsPerSession    string
+	MostProductiveDay      string
+	ClipboardCopies        string
+	CharacterUsage         string
+	EntropyDistribution    string
+	ActivityGrowth         string
+	SecurityImprovement    string
+	Forecast               string
+	Recommendation         string
+
+	// Время активности
+	TimeMorning   string
+	TimeAfternoon string
+	TimeEvening   string
+
+	// Параметры Argon2
+	ArgonTime    string
+	ArgonMemory  string
+	ArgonThreads string
+	ArgonKeyLen  string
+
+	// Использование памяти
+	PeakMemory    string
+	AverageMemory string
+
+	// Единицы измерения
+	UnitDays            string
+	UnitPasswordsPerDay string
+	UnitBits            string
+	UnitYears           string
+	UnitMilliseconds    string
+	UnitMegabytes       string
+	UnitBytes           string
+	UnitIterations      string
+	UnitPercent         string
+	UnitMinutes         string
+	UnitSessions        string
+
+	// Сообщения статистики
+	StatSaveError       string
+	VeryStrongPasswords string
+	StrongPasswords     string
+	WeakPasswords       string
+	NoDataAvailable     string
+	PlatformInfo        string
+	VersionInfo         string
+	ProfileInfo         string
+	ColorOutputInfo     string
+	BitsLabel           string
+
 	Flags struct {
 		Lang             string
 		LangDesc         string
@@ -357,7 +438,88 @@ func GetMessages(lang Language, version string) *Messages {
 			ConfigLanguageValues:       "default_language должен быть 'ru', 'en' или 'auto'",
 			ConfigCharsetValues:        "character_set должен быть 'alphanumeric', 'alphanumeric_symbols' или 'symbols_only'",
 			ConfigTimeoutRange:         "default_clear_timeout должен быть >= 0",
-			About:                      "PGen CLI - безопасный генератор паролей\n\nОписание:\n  Утилита для генерации детерминированных паролей из мастер-пароля\n  с использованием криптографически стойкого алгоритма Argon2.\n\nОсобенности:\n  • Одинаковые входные данные всегда дают одинаковый результат\n  • Высокая криптографическая стойкость (Argon2)\n  • Кроссплатформенность (Windows, Linux, macOS)\n  • Поддержка русского и английского языков\n  • Интеграция с буфером обмена\n\nБезопасность:\n  • Пароли не сохраняются и не передаются по сети\n  • Все вычисления производятся локально\n  • Исходный код открыт для аудита\n\nАвтор: Макс Лейбер ©2025\nEmail: max@leiber.pro\nTelegram: @leiberpro\nЛицензия: MIT",
+
+			// Метрики и статистика
+			MetricsTitle:       "📊 Подробные метрики PGen",
+			ProfileStatistics:  "=== Статистика профиля [%s] ===",
+			SecurityMetrics:    "=== Анализ безопасности ===",
+			PerformanceMetrics: "=== Производительность ===",
+			UsagePatterns:      "=== Паттерны использования ===",
+			SystemInformation:  "=== Система ===",
+			SessionMetrics:     "=== Сеансы работы ===",
+			QualityAnalysis:    "=== Анализ качества паролей ===",
+			TrendsAndForecasts: "=== Тренды ===",
+
+			// Детали метрик
+			PasswordsGenerated:     "Сгенерировано паролей: %d",
+			FirstUsed:              "Первое использование: %s",
+			LastUsed:               "Последнее использование: %s",
+			ActiveDays:             "Активных дней: %d",
+			AverageUsage:           "Среднее использование: %.1f паролей/день",
+			AverageEntropy:         "Средняя энтропия: %.1f бит",
+			StrengthDistribution:   "Распределение силы паролей:",
+			CrackTimeMedian:        "Время взлома (медиана): %s",
+			WeakestPassword:        "Самый слабый пароль: %.1f бит энтропии",
+			StrongestPassword:      "Самый сильный пароль: %.1f бит энтропии",
+			AverageGenTime:         "Среднее время генерации: %dms",
+			ArgonParameters:        "Параметры Argon2:",
+			MemoryUsage:            "Использование памяти:",
+			SecureStringActive:     "SecureString активных: %.1f",
+			TopServices:            "Топ-%d сервисов:",
+			PreferredLength:        "Предпочитаемая длина:",
+			TimeActivity:           "Время активности:",
+			TotalSessions:          "Всего сеансов: %d",
+			AverageSessionDuration: "Средняя длительность: %.1f минуты",
+			PasswordsPerSession:    "Паролей за сеанс: %.1f (среднее)",
+			MostProductiveDay:      "Самый продуктивный день: %s (%d паролей)",
+			ClipboardCopies:        "Копирований в буфер: %d (%d%%)",
+			CharacterUsage:         "Использование символов:",
+			EntropyDistribution:    "Энтропийное распределение:",
+			ActivityGrowth:         "Рост активности: +%d%% за месяц",
+			SecurityImprovement:    "Улучшение безопасности: +%.1f бит энтропии (среднее)",
+			Forecast:               "Прогноз: %d паролей к концу месяца",
+			Recommendation:         "Рекомендация: %s",
+
+			// Время активности
+			TimeMorning:   "Утро (06-12): %d%%",
+			TimeAfternoon: "День (12-18): %d%%",
+			TimeEvening:   "Вечер (18-24): %d%%",
+
+			// Параметры Argon2
+			ArgonTime:    "├─ Time: %d итераций",
+			ArgonMemory:  "├─ Memory: %dMB",
+			ArgonThreads: "├─ Threads: %d",
+			ArgonKeyLen:  "└─ KeyLen: %d байта",
+
+			// Использование памяти
+			PeakMemory:    "├─ Пиковое: %dMB",
+			AverageMemory: "├─ Среднее: %dMB",
+
+			// Сообщения статистики
+			StatSaveError:       "⚠️ Не удалось сохранить статистику:",
+			VeryStrongPasswords: "  ├─ Очень сильные: %.1f%% (%d паролей)",
+			StrongPasswords:     "  ├─ Сильные: %.1f%% (%d паролей)",
+			WeakPasswords:       "  └─ Слабые: %.1f%% (%d паролей)",
+			NoDataAvailable:     "  └─ Нет данных для анализа (пароли не генерировались)",
+			PlatformInfo:        "Платформа: %s %s",
+			VersionInfo:         "Версия PGen: %s",
+			ProfileInfo:         "Профиль: %s",
+			ColorOutputInfo:     "Цветной вывод: %v",
+			BitsLabel:           "бит",
+
+			// Единицы измерения
+			UnitDays:            "дней",
+			UnitPasswordsPerDay: "паролей/день",
+			UnitBits:            "бит",
+			UnitYears:           "лет",
+			UnitMilliseconds:    "мс",
+			UnitMegabytes:       "МБ",
+			UnitBytes:           "байт",
+			UnitIterations:      "итераций",
+			UnitPercent:         "%%",
+			UnitMinutes:         "минут",
+			UnitSessions:        "сеансов",
+			About:               "PGen CLI - безопасный генератор паролей\n\nОписание:\n  Утилита для генерации детерминированных паролей из мастер-пароля\n  с использованием криптографически стойкого алгоритма Argon2.\n\nОсобенности:\n  • Одинаковые входные данные всегда дают одинаковый результат\n  • Высокая криптографическая стойкость (Argon2)\n  • Кроссплатформенность (Windows, Linux, macOS)\n  • Поддержка русского и английского языков\n  • Интеграция с буфером обмена\n\nБезопасность:\n  • Пароли не сохраняются и не передаются по сети\n  • Все вычисления производятся локально\n  • Исходный код открыт для аудита\n\nАвтор: Макс Лейбер ©2025\nEmail: max@leiber.pro\nTelegram: @leiberpro\nЛицензия: MIT",
 
 			// Установка приложения
 			InstallSuccess:          "✅ PGen успешно установлен в систему",
@@ -647,7 +809,88 @@ func GetMessages(lang Language, version string) *Messages {
 			ConfigLanguageValues:       "default_language must be 'ru', 'en' or 'auto'",
 			ConfigCharsetValues:        "character_set must be 'alphanumeric', 'alphanumeric_symbols', or 'symbols_only'",
 			ConfigTimeoutRange:         "default_clear_timeout must be >= 0",
-			About:                      "PGen CLI - Secure Password Generator\n\nDescription:\n  A utility for generating deterministic passwords from a master password\n  using the cryptographically strong Argon2 algorithm.\n\nFeatures:\n  • Same input always produces the same result\n  • High cryptographic strength (Argon2)\n  • Cross-platform support (Windows, Linux, macOS)\n  • Russian and English language support\n  • Clipboard integration\n\nSecurity:\n  • Passwords are not stored or transmitted over the network\n  • All computations are performed locally\n  • Source code is open for audit\n\nAuthor: Max Leiber ©2025\nEmail: max@leiber.pro\nTelegram: @leiberpro\nLicense: MIT",
+
+			// Metrics and statistics
+			MetricsTitle:       "📊 PGen Detailed Metrics",
+			ProfileStatistics:  "=== Profile Statistics [%s] ===",
+			SecurityMetrics:    "=== Security Analysis ===",
+			PerformanceMetrics: "=== Performance ===",
+			UsagePatterns:      "=== Usage Patterns ===",
+			SystemInformation:  "=== System ===",
+			SessionMetrics:     "=== Work Sessions ===",
+			QualityAnalysis:    "=== Password Quality Analysis ===",
+			TrendsAndForecasts: "=== Trends ===",
+
+			// Metric details
+			PasswordsGenerated:     "Passwords generated: %d",
+			FirstUsed:              "First used: %s",
+			LastUsed:               "Last used: %s",
+			ActiveDays:             "Active days: %d",
+			AverageUsage:           "Average usage: %.1f passwords/day",
+			AverageEntropy:         "Average entropy: %.1f bits",
+			StrengthDistribution:   "Strength distribution:",
+			CrackTimeMedian:        "Crack time (median): %s",
+			WeakestPassword:        "Weakest password: %.1f bits entropy",
+			StrongestPassword:      "Strongest password: %.1f bits entropy",
+			AverageGenTime:         "Average generation time: %dms",
+			ArgonParameters:        "Argon2 parameters:",
+			MemoryUsage:            "Memory usage:",
+			SecureStringActive:     "SecureString active: %.1f",
+			TopServices:            "Top-%d services:",
+			PreferredLength:        "Preferred length:",
+			TimeActivity:           "Time activity:",
+			TotalSessions:          "Total sessions: %d",
+			AverageSessionDuration: "Average duration: %.1f minutes",
+			PasswordsPerSession:    "Passwords per session: %.1f (average)",
+			MostProductiveDay:      "Most productive day: %s (%d passwords)",
+			ClipboardCopies:        "Clipboard copies: %d (%d%%)",
+			CharacterUsage:         "Character usage:",
+			EntropyDistribution:    "Entropy distribution:",
+			ActivityGrowth:         "Activity growth: +%d%% per month",
+			SecurityImprovement:    "Security improvement: +%.1f bits entropy (average)",
+			Forecast:               "Forecast: %d passwords by month end",
+			Recommendation:         "Recommendation: %s",
+
+			// Time activity
+			TimeMorning:   "Morning (06-12): %d%%",
+			TimeAfternoon: "Afternoon (12-18): %d%%",
+			TimeEvening:   "Evening (18-24): %d%%",
+
+			// Argon2 parameters
+			ArgonTime:    "├─ Time: %d iterations",
+			ArgonMemory:  "├─ Memory: %dMB",
+			ArgonThreads: "├─ Threads: %d",
+			ArgonKeyLen:  "└─ KeyLen: %d bytes",
+
+			// Memory usage
+			PeakMemory:    "├─ Peak: %dMB",
+			AverageMemory: "├─ Average: %dMB",
+
+			// Единицы измерения
+			UnitDays:            "days",
+			UnitPasswordsPerDay: "passwords/day",
+			UnitBits:            "bits",
+			UnitYears:           "years",
+			UnitMilliseconds:    "ms",
+			UnitMegabytes:       "MB",
+			UnitBytes:           "bytes",
+			UnitIterations:      "iterations",
+			UnitPercent:         "%%",
+			UnitMinutes:         "minutes",
+			UnitSessions:        "sessions",
+
+			// Сообщения статистики
+			StatSaveError:       "⚠️ Failed to save statistics:",
+			VeryStrongPasswords: "  ├─ Very strong: %.1f%% (%d passwords)",
+			StrongPasswords:     "  ├─ Strong: %.1f%% (%d passwords)",
+			WeakPasswords:       "  └─ Weak: %.1f%% (%d passwords)",
+			NoDataAvailable:     "  └─ No data for analysis (no passwords generated)",
+			PlatformInfo:        "Platform: %s %s",
+			VersionInfo:         "PGen Version: %s",
+			ProfileInfo:         "Profile: %s",
+			ColorOutputInfo:     "Color output: %v",
+			BitsLabel:           "bits",
+			About:               "PGen CLI - Secure Password Generator\n\nDescription:\n  A utility for generating deterministic passwords from a master password\n  using the cryptographically strong Argon2 algorithm.\n\nFeatures:\n  • Same input always produces the same result\n  • High cryptographic strength (Argon2)\n  • Cross-platform support (Windows, Linux, macOS)\n  • Russian and English language support\n  • Clipboard integration\n\nSecurity:\n  • Passwords are not stored or transmitted over the network\n  • All computations are performed locally\n  • Source code is open for audit\n\nAuthor: Max Leiber ©2025\nEmail: max@leiber.pro\nTelegram: @leiberpro\nLicense: MIT",
 
 			// Installation messages
 			InstallSuccess:          "✅ PGen successfully installed to system",

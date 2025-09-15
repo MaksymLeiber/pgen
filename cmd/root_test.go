@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"math"
 	"os"
 	"runtime"
 	"strings"
@@ -634,7 +635,106 @@ func TestDisplayPasswordStrength(t *testing.T) {
 	})
 }
 
-// Бенчмарки для измерения производительности
+func TestCalculateAlphabetSize(t *testing.T) {
+	// Тест функции расчета размера алфавита
+	tests := []struct {
+		name         string
+		characterSet string
+		expected     int
+	}{
+		{
+			name:         "Alphanumeric",
+			characterSet: "alphanumeric",
+			expected:     62, // A-Z(26) + a-z(26) + 0-9(10)
+		},
+		{
+			name:         "Alphanumeric with symbols",
+			characterSet: "alphanumeric_symbols",
+			expected:     94, // A-Z(26) + a-z(26) + 0-9(10) + спецсимволы(32)
+		},
+		{
+			name:         "Symbols only",
+			characterSet: "symbols_only",
+			expected:     32, // Только спецсимволы
+		},
+		{
+			name:         "Unknown character set",
+			characterSet: "unknown",
+			expected:     94, // По умолчанию alphanumeric_symbols
+		},
+		{
+			name:         "Empty character set",
+			characterSet: "",
+			expected:     94, // По умолчанию alphanumeric_symbols
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := calculateAlphabetSize(tt.characterSet)
+			if result != tt.expected {
+				t.Errorf("calculateAlphabetSize(%q) = %d, ожидается %d", tt.characterSet, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestRealEntropyCalculation(t *testing.T) {
+	// Тест реального расчета энтропии
+	tests := []struct {
+		name           string
+		characterSet   string
+		passwordLength int
+		expectedMin    float64
+		expectedMax    float64
+	}{
+		{
+			name:           "16-символьный alphanumeric",
+			characterSet:   "alphanumeric",
+			passwordLength: 16,
+			expectedMin:    95.0, // 16 * log2(62) ≈ 95.4
+			expectedMax:    96.0,
+		},
+		{
+			name:           "16-символьный alphanumeric_symbols",
+			characterSet:   "alphanumeric_symbols",
+			passwordLength: 16,
+			expectedMin:    104.8, // 16 * log2(94) = 104.87
+			expectedMax:    104.9,
+		},
+		{
+			name:           "24-символьный alphanumeric_symbols",
+			characterSet:   "alphanumeric_symbols",
+			passwordLength: 24,
+			expectedMin:    157.3, // 24 * log2(94) = 157.31
+			expectedMax:    157.4,
+		},
+		{
+			name:           "12-символьный symbols_only",
+			characterSet:   "symbols_only",
+			passwordLength: 12,
+			expectedMin:    60.0, // 12 * log2(32) = 60.0
+			expectedMax:    60.1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			alphabetSize := calculateAlphabetSize(tt.characterSet)
+			entropy := float64(tt.passwordLength) * math.Log2(float64(alphabetSize))
+
+			if entropy < tt.expectedMin || entropy > tt.expectedMax {
+				t.Errorf("Энтропия для %s = %.2f, ожидается в диапазоне [%.2f, %.2f]",
+					tt.name, entropy, tt.expectedMin, tt.expectedMax)
+			}
+
+			// Проверяем, что энтропия положительная
+			if entropy <= 0 {
+				t.Errorf("Энтропия должна быть положительной, получено: %.2f", entropy)
+			}
+		})
+	}
+}
 func BenchmarkDetectLanguageFromArgs(b *testing.B) {
 	originalArgs := os.Args
 	defer func() { os.Args = originalArgs }()

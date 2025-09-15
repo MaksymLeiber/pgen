@@ -6,9 +6,29 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/MaksymLeiber/pgen/internal/i18n"
 )
+
+// ProfileStatistics статистика использования профиля
+type ProfileStatistics struct {
+	// Счетчик сгенерированных паролей для текущего профиля
+	PasswordsGenerated int64 `json:"passwords_generated"`
+
+	// Время первого использования профиля
+	FirstUsed *time.Time `json:"first_used,omitempty"`
+
+	// Время последнего использования
+	LastUsed *time.Time `json:"last_used,omitempty"`
+
+	// Название текущего профиля (для будущего расширения)
+	CurrentProfile string `json:"current_profile"`
+
+	// Статистика времени генерации
+	TotalGenerationTime   int64 `json:"total_generation_time_ms"`   // Общее время в миллисекундах
+	AverageGenerationTime int64 `json:"average_generation_time_ms"` // Среднее время в миллисекундах
+}
 
 // Config структура конфигурации
 type Config struct {
@@ -34,6 +54,9 @@ type Config struct {
 	// Новые настройки для улучшенной генерации salt
 	Username string `json:"username"`
 
+	// Статистика использования
+	ProfileStats ProfileStatistics `json:"profile_stats"`
+
 	// Версия конфигурации для совместимости
 	Version string `json:"config_version"`
 }
@@ -53,7 +76,11 @@ func DefaultConfig() *Config {
 		ShowPasswordInfo:    false,
 		ColorOutput:         true,
 		Username:            "user",
-		Version:             "1.0",
+		ProfileStats: ProfileStatistics{
+			PasswordsGenerated: 0,
+			CurrentProfile:     "default",
+		},
+		Version: "1.0",
 	}
 }
 
@@ -177,6 +204,9 @@ func (c *Config) validate() {
 	if c.Username == "" {
 		c.Username = "user"
 	}
+	if c.ProfileStats.CurrentProfile == "" {
+		c.ProfileStats.CurrentProfile = "default"
+	}
 }
 
 // Export экспортирует конфигурацию в указанный файл
@@ -207,4 +237,24 @@ func Import(filename string, messages *i18n.Messages) (*Config, error) {
 
 	config.validate()
 	return &config, nil
+}
+
+// IncrementPasswordCount увеличивает счетчик сгенерированных паролей и обновляет статистику времени
+func (c *Config) IncrementPasswordCount(generationTimeMs int64) {
+	now := time.Now()
+
+	// Увеличиваем счетчик
+	c.ProfileStats.PasswordsGenerated++
+
+	// Обновляем время последнего использования
+	c.ProfileStats.LastUsed = &now
+
+	// Устанавливаем время первого использования, если оно не установлено
+	if c.ProfileStats.FirstUsed == nil {
+		c.ProfileStats.FirstUsed = &now
+	}
+
+	// Обновляем статистику времени генерации
+	c.ProfileStats.TotalGenerationTime += generationTimeMs
+	c.ProfileStats.AverageGenerationTime = c.ProfileStats.TotalGenerationTime / c.ProfileStats.PasswordsGenerated
 }

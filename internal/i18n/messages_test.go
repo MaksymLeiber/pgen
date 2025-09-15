@@ -521,7 +521,115 @@ func TestMessageConsistency(t *testing.T) {
 	}
 }
 
-// Бенчмарки для измерения производительности
+func TestMetricsMessages(t *testing.T) {
+	// Тест сообщений метрик
+	ruMessages := GetMessages(Russian, "1.0.0")
+	enMessages := GetMessages(English, "1.0.0")
+
+	// Проверяем основные сообщения метрик
+	metricTests := []struct {
+		name  string
+		ruMsg string
+		enMsg string
+	}{
+		{"MetricsTitle", ruMessages.MetricsTitle, enMessages.MetricsTitle},
+		{"ProfileStatistics", ruMessages.ProfileStatistics, enMessages.ProfileStatistics},
+		{"SecurityMetrics", ruMessages.SecurityMetrics, enMessages.SecurityMetrics},
+		{"PerformanceMetrics", ruMessages.PerformanceMetrics, enMessages.PerformanceMetrics},
+		{"SystemInformation", ruMessages.SystemInformation, enMessages.SystemInformation},
+		{"PasswordsGenerated", ruMessages.PasswordsGenerated, enMessages.PasswordsGenerated},
+		{"AverageEntropy", ruMessages.AverageEntropy, enMessages.AverageEntropy},
+		{"StrengthDistribution", ruMessages.StrengthDistribution, enMessages.StrengthDistribution},
+	}
+
+	for _, tt := range metricTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.ruMsg == "" {
+				t.Errorf("Русское сообщение метрик %s не должно быть пустым", tt.name)
+			}
+			if tt.enMsg == "" {
+				t.Errorf("Английское сообщение метрик %s не должно быть пустым", tt.name)
+			}
+			if tt.ruMsg == tt.enMsg {
+				t.Errorf("Русское и английское сообщения метрик %s не должны быть одинаковыми: %q", tt.name, tt.ruMsg)
+			}
+		})
+	}
+}
+
+func TestMetricsFormatStrings(t *testing.T) {
+	// Тест форматных строк метрик
+	ruMessages := GetMessages(Russian, "1.0.0")
+	enMessages := GetMessages(English, "1.0.0")
+
+	// Проверяем форматные строки с %d для чисел
+	formatTests := []struct {
+		name   string
+		ruMsg  string
+		enMsg  string
+		format string
+	}{
+		{"PasswordsGenerated", ruMessages.PasswordsGenerated, enMessages.PasswordsGenerated, "%d"},
+		{"ActiveDays", ruMessages.ActiveDays, enMessages.ActiveDays, "%d"},
+		{"AverageEntropy", ruMessages.AverageEntropy, enMessages.AverageEntropy, "%.1f"},
+		{"ProfileStatistics", ruMessages.ProfileStatistics, enMessages.ProfileStatistics, "%s"},
+	}
+
+	for _, tt := range formatTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if !strings.Contains(tt.ruMsg, tt.format) {
+				t.Errorf("Русское сообщение %s должно содержать формат %s: %q", tt.name, tt.format, tt.ruMsg)
+			}
+			if !strings.Contains(tt.enMsg, tt.format) {
+				t.Errorf("Английское сообщение %s должно содержать формат %s: %q", tt.name, tt.format, tt.enMsg)
+			}
+		})
+	}
+}
+
+func TestNewStatisticsMessages(t *testing.T) {
+	// Тест новых сообщений для статистики
+	ruMessages := GetMessages(Russian, "1.0.0")
+	enMessages := GetMessages(English, "1.0.0")
+
+	// Проверяем новые поля для статистики
+	newStatTests := []struct {
+		name  string
+		ruMsg string
+		enMsg string
+	}{
+		{"StatSaveError", ruMessages.StatSaveError, enMessages.StatSaveError},
+		{"VeryStrongPasswords", ruMessages.VeryStrongPasswords, enMessages.VeryStrongPasswords},
+		{"StrongPasswords", ruMessages.StrongPasswords, enMessages.StrongPasswords},
+		{"WeakPasswords", ruMessages.WeakPasswords, enMessages.WeakPasswords},
+		{"NoDataAvailable", ruMessages.NoDataAvailable, enMessages.NoDataAvailable},
+		{"PlatformInfo", ruMessages.PlatformInfo, enMessages.PlatformInfo},
+		{"VersionInfo", ruMessages.VersionInfo, enMessages.VersionInfo},
+		{"ProfileInfo", ruMessages.ProfileInfo, enMessages.ProfileInfo},
+		{"ColorOutputInfo", ruMessages.ColorOutputInfo, enMessages.ColorOutputInfo},
+		{"BitsLabel", ruMessages.BitsLabel, enMessages.BitsLabel},
+	}
+
+	for _, tt := range newStatTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.ruMsg == "" {
+				t.Errorf("Новое русское сообщение %s не должно быть пустым", tt.name)
+			}
+			if tt.enMsg == "" {
+				t.Errorf("Новое английское сообщение %s не должно быть пустым", tt.name)
+			}
+		})
+	}
+
+	// Проверяем форматные строки для паролей
+	if !strings.Contains(ruMessages.VeryStrongPasswords, "%.1f") || !strings.Contains(ruMessages.VeryStrongPasswords, "%d") {
+		t.Errorf("Русское VeryStrongPasswords должно содержать %%.1f и %%d: %q", ruMessages.VeryStrongPasswords)
+	}
+
+	if !strings.Contains(enMessages.VeryStrongPasswords, "%.1f") || !strings.Contains(enMessages.VeryStrongPasswords, "%d") {
+		t.Errorf("Английское VeryStrongPasswords должно содержать %%.1f и %%d: %q", enMessages.VeryStrongPasswords)
+	}
+}
 func BenchmarkGetMessagesRussian(b *testing.B) {
 	version := "1.0.0"
 	b.ResetTimer()
