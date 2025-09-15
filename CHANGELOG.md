@@ -5,6 +5,32 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и этот проект придерживается [Семантического Версионирования](https://semver.org/lang/ru/).
 
+## [Unreleased]
+### Планируется
+- Улучшения безопасности: HKDF для расширения ключей
+- Очистка памяти от конфиденциальных данных
+- Улучшенное логирование и обработка ошибок
+
+## [1.0.3] - 2025-01-15
+### Исправлено
+- Критическая ошибка: убран pepper из генерации salt
+- Восстановлен детерминизм паролей между разными устройствами
+- Одинаковые пароли для Windows, Linux, macOS при одинаковых параметрах
+
+### Удалено
+- Поле Pepper из структуры Config
+- Функция generateRandomPepper()
+- Параметр pepper из GeneratePassword()
+- Ненужные импорты crypto/rand и encoding/hex
+
+### Изменено
+- Схема генерации salt: `SHA256("PGenCLI|v1|" + serviceName + "|" + username)`
+- Подпись метода GeneratePassword() для работы без pepper
+- Обновлены все тесты для новой схемы
+
+### Безопасность
+- Восстановлена кросс-платформенная совместимость
+- Сохранены улучшения безопасности (версионирование + username)
 
 ## [1.0.2] - 2025-01-14
 ### Добавлено
@@ -49,7 +75,8 @@
 - Защита от атак радужных таблиц
 - Временная очистка буфера обмена
 
-[Unreleased]: https://github.com/MaksymLeiber/pgen/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/MaksymLeiber/pgen/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/MaksymLeiber/pgen/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/MaksymLeiber/pgen/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/MaksymLeiber/pgen/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/MaksymLeiber/pgen/releases/tag/v1.0.0
