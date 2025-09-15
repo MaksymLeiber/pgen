@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"os"
 	"strings"
+
+	"github.com/MaksymLeiber/pgen/internal/security"
 )
 
 type InputMessages struct {
@@ -11,8 +13,19 @@ type InputMessages struct {
 	InputCanceled string
 }
 
-func ReadPasswordWithStarsAndMessages(messages *InputMessages) (string, error) {
-	return readPasswordWithStars(messages)
+func ReadPasswordWithStarsAndMessages(messages *InputMessages) (*security.SecureString, error) {
+	password, err := readPasswordWithStars(messages)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Создаем SecureString из введенного пароля
+	securePassword := security.NewSecureString(password)
+	
+	// Очищаем обычную строку из памяти
+	security.SecureWipe([]byte(password))
+	
+	return securePassword, nil
 }
 
 func ReadLine() (string, error) {

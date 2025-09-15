@@ -198,73 +198,76 @@ func reverse(s string) string {
 	return string(runes)
 }
 
-// hasCommonWords проверяет на наличие словарных слов
-func hasCommonWords(password string) bool {
-	// Расширенный список частых слов и паттернов
-	commonWords := []string{
-		// Основные пароли
-		"password", "пароль", "pass", "pwd", "passw0rd",
-		"123456", "12345678", "123456789", "1234567890",
-		"qwerty", "qwertyui", "asdfgh", "zxcvbn",
-		"111111", "000000", "654321",
-		
-		// Системные учетные записи
-		"admin", "administrator", "администратор",
-		"user", "пользователь", "guest", "гость",
-		"root", "рут", "superuser", "супер",
-		"test", "тест", "demo", "демо",
-		
-		// Вход и авторизация
-		"login", "логин", "signin", "вход",
-		"access", "доступ", "enter", "войти",
-		"welcome", "добро пожаловать", "start", "старт",
-		
-		// Секретность
-		"secret", "секрет", "private", "приватный",
-		"confidential", "конфиденциально", "hidden", "скрытый",
-		"secure", "безопасный", "protect", "защита",
-		
-		// Личная информация
-		"love", "любовь", "family", "семья",
-		"money", "деньги", "house", "дом",
-		"hello", "привет", "world", "мир",
-		"life", "жизнь", "work", "работа",
-		
-		// Популярные слова
-		"computer", "компьютер", "internet", "интернет",
-		"email", "почта", "phone", "телефон",
-		"birthday", "день рождения", "name", "имя",
-		"address", "адрес", "city", "город",
-		
-		// Клавиатурные паттерны
-		"asdf", "hjkl", "wasd", "йцук",
-		"фыва", "олдж", "ячсм", "qaz",
-		"wsx", "edc", "rfv", "tgb",
-		
-		// Популярные бренды и сервисы
-		"google", "гугл", "apple", "эппл",
-		"microsoft", "майкрософт", "windows", "виндовс",
-		"facebook", "фейсбук", "twitter", "твиттер",
-		"instagram", "инстаграм", "youtube", "ютуб",
-		
-		// Даты и годы
-		"2023", "2024", "2025", "2022", "2021", "2020",
-		"january", "январь", "february", "февраль",
-		"march", "март", "april", "апрель",
-		"monday", "понедельник", "sunday", "воскресенье",
-		
-		// Простые замены
-		"passw0rd", "p@ssword", "p@ssw0rd",
-		"adm1n", "@dmin", "r00t", "t3st",
-		"s3cret", "l0ve", "h3llo", "w0rld",
-	}
+// commonWordsMap содержит часто используемые слова и паттерны для быстрого поиска
+var commonWordsMap = map[string]bool{
+	// Основные пароли
+	"password": true, "пароль": true, "pass": true, "pwd": true, "passw0rd": true,
+	"123456": true, "12345678": true, "123456789": true, "1234567890": true,
+	"qwerty": true, "qwertyui": true, "asdfgh": true, "zxcvbn": true,
+	"111111": true, "000000": true, "654321": true,
 
+	// Системные учетные записи
+	"admin": true, "administrator": true, "администратор": true,
+	"user": true, "пользователь": true, "guest": true, "гость": true,
+	"root": true, "рут": true, "superuser": true, "супер": true,
+	"test": true, "тест": true, "demo": true, "демо": true,
+
+	// Вход и авторизация
+	"login": true, "логин": true, "signin": true, "вход": true,
+	"access": true, "доступ": true, "enter": true, "войти": true,
+	"welcome": true, "добро пожаловать": true, "start": true, "старт": true,
+
+	// Секретность
+	"secret": true, "секрет": true, "private": true, "приватный": true,
+	"confidential": true, "конфиденциально": true, "hidden": true, "скрытый": true,
+	"secure": true, "безопасный": true, "protect": true, "защита": true,
+
+	// Личная информация
+	"love": true, "любовь": true, "family": true, "семья": true,
+	"money": true, "деньги": true, "house": true, "дом": true,
+	"hello": true, "привет": true, "world": true, "мир": true,
+	"life": true, "жизнь": true, "work": true, "работа": true,
+
+	// Популярные слова
+	"computer": true, "компьютер": true, "internet": true, "интернет": true,
+	"email": true, "почта": true, "phone": true, "телефон": true,
+	"birthday": true, "день рождения": true, "name": true, "имя": true,
+	"address": true, "адрес": true, "city": true, "город": true,
+
+	// Клавиатурные паттерны
+	"asdf": true, "hjkl": true, "wasd": true, "йцук": true,
+	"фыва": true, "олдж": true, "ячсм": true, "qaz": true,
+	"wsx": true, "edc": true, "rfv": true, "tgb": true,
+
+	// Популярные бренды и сервисы
+	"google": true, "гугл": true, "apple": true, "эппл": true,
+	"microsoft": true, "майкрософт": true, "windows": true, "виндовс": true,
+	"facebook": true, "фейсбук": true, "twitter": true, "твиттер": true,
+	"instagram": true, "инстаграм": true, "youtube": true, "ютуб": true,
+
+	// Даты и годы
+	"2023": true, "2024": true, "2025": true, "2022": true, "2021": true, "2020": true,
+	"january": true, "январь": true, "february": true, "февраль": true,
+	"march": true, "март": true, "april": true, "апрель": true,
+	"monday": true, "понедельник": true, "sunday": true, "воскресенье": true,
+
+	// Простые замены
+	"p@ssword": true, "p@ssw0rd": true,
+	"adm1n": true, "@dmin": true, "r00t": true, "t3st": true,
+	"s3cret": true, "l0ve": true, "h3llo": true, "w0rld": true,
+}
+
+// hasCommonWords проверяет на наличие словарных слов (оптимизированная версия)
+func hasCommonWords(password string) bool {
 	lower := strings.ToLower(password)
-	for _, word := range commonWords {
+
+	// Быстрая проверка прямых совпадений в map
+	for word := range commonWordsMap {
 		if strings.Contains(lower, word) {
 			return true
 		}
 	}
+
 	return false
 }
 

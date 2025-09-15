@@ -151,8 +151,8 @@ func TestPasswordStrengthMessages(t *testing.T) {
 			if tt.msg == "" {
 				t.Errorf("Русское сообщение %s не должно быть пустым", tt.name)
 			}
-			if !strings.Contains(tt.msg, "🔴") && !strings.Contains(tt.msg, "🟠") && 
-			   !strings.Contains(tt.msg, "🟡") && !strings.Contains(tt.msg, "🟢") {
+			if !strings.Contains(tt.msg, "🔴") && !strings.Contains(tt.msg, "🟠") &&
+				!strings.Contains(tt.msg, "🟡") && !strings.Contains(tt.msg, "🟢") {
 				// Проверяем, что есть хотя бы текст
 				if len(tt.msg) < 3 {
 					t.Errorf("Русское сообщение %s слишком короткое: %q", tt.name, tt.msg)
@@ -191,7 +191,7 @@ func TestConfigurationMessages(t *testing.T) {
 	enMessages := GetMessages(English, "1.0.0")
 
 	configTests := []struct {
-		name string
+		name  string
 		ruMsg string
 		enMsg string
 	}{
@@ -201,6 +201,9 @@ func TestConfigurationMessages(t *testing.T) {
 		{"ConfigShow", ruMessages.ConfigShow, enMessages.ConfigShow},
 		{"ConfigSet", ruMessages.ConfigSet, enMessages.ConfigSet},
 		{"ConfigReset", ruMessages.ConfigReset, enMessages.ConfigReset},
+		{"ConfigInvalidUsername", ruMessages.ConfigInvalidUsername, enMessages.ConfigInvalidUsername},
+		{"ConfigUsernameEmpty", ruMessages.ConfigUsernameEmpty, enMessages.ConfigUsernameEmpty},
+		{"ProfileLabel", ruMessages.ProfileLabel, enMessages.ProfileLabel},
 	}
 
 	for _, tt := range configTests {
@@ -211,7 +214,7 @@ func TestConfigurationMessages(t *testing.T) {
 			if tt.enMsg == "" {
 				t.Errorf("Английское сообщение %s не должно быть пустым", tt.name)
 			}
-			
+
 			// Проверяем, что сообщения разные (не одинаковые)
 			if tt.ruMsg == tt.enMsg {
 				t.Errorf("Русское и английское сообщения %s не должны быть одинаковыми: %q", tt.name, tt.ruMsg)
@@ -227,7 +230,7 @@ func TestErrorMessages(t *testing.T) {
 
 	// Проверяем основные ошибки
 	errorTests := []struct {
-		name string
+		name  string
 		ruMsg string
 		enMsg string
 	}{
@@ -251,7 +254,7 @@ func TestErrorMessages(t *testing.T) {
 
 	// Проверяем вложенные структуры ошибок
 	passwordIssueTests := []struct {
-		name string
+		name  string
 		ruMsg string
 		enMsg string
 	}{
@@ -279,7 +282,7 @@ func TestFlagsMessages(t *testing.T) {
 	enMessages := GetMessages(English, "1.0.0")
 
 	flagTests := []struct {
-		name string
+		name  string
 		ruMsg string
 		enMsg string
 	}{
@@ -388,7 +391,7 @@ func TestDetectLanguageFromEnvironment(t *testing.T) {
 
 			result := DetectLanguage("") // Пустой флаг для проверки окружения
 			if result != tt.expected {
-				t.Errorf("DetectLanguage('') с окружением LANG=%q, LC_ALL=%q, LC_MESSAGES=%q = %q, ожидается %q", 
+				t.Errorf("DetectLanguage('') с окружением LANG=%q, LC_ALL=%q, LC_MESSAGES=%q = %q, ожидается %q",
 					tt.langEnv, tt.lcAllEnv, tt.lcMsgEnv, result, tt.expected)
 			}
 		})
@@ -423,7 +426,7 @@ func TestInstallationMessages(t *testing.T) {
 	enMessages := GetMessages(English, "1.0.0")
 
 	installTests := []struct {
-		name string
+		name  string
 		ruMsg string
 		enMsg string
 	}{
@@ -453,7 +456,7 @@ func TestTimeMessages(t *testing.T) {
 	enMessages := GetMessages(English, "1.0.0")
 
 	timeTests := []struct {
-		name string
+		name  string
 		ruMsg string
 		enMsg string
 	}{
@@ -475,9 +478,9 @@ func TestTimeMessages(t *testing.T) {
 			}
 
 			// Проверяем, что сообщения времени содержат форматирование для чисел
-			if strings.Contains(tt.name, "Seconds") || strings.Contains(tt.name, "Minutes") || 
-			   strings.Contains(tt.name, "Hours") || strings.Contains(tt.name, "Days") || 
-			   strings.Contains(tt.name, "Years") {
+			if strings.Contains(tt.name, "Seconds") || strings.Contains(tt.name, "Minutes") ||
+				strings.Contains(tt.name, "Hours") || strings.Contains(tt.name, "Days") ||
+				strings.Contains(tt.name, "Years") {
 				if !strings.Contains(tt.ruMsg, "%.0f") {
 					t.Errorf("Русское сообщение времени %s должно содержать форматирование %%.0f, получено: %q", tt.name, tt.ruMsg)
 				}
@@ -605,7 +608,7 @@ func TestTipsArrays(t *testing.T) {
 
 	// Проверяем, что количество советов одинаково в обоих языках
 	if len(ruMessages.Tips) != len(enMessages.Tips) {
-		t.Errorf("Количество советов должно быть одинаково: русский=%d, английский=%d", 
+		t.Errorf("Количество советов должно быть одинаково: русский=%d, английский=%d",
 			len(ruMessages.Tips), len(enMessages.Tips))
 	}
 
@@ -640,12 +643,12 @@ func TestTipsArrays(t *testing.T) {
 	}
 
 	if len(uniqueRuTips) != len(ruMessages.Tips) {
-		t.Errorf("Есть дублирующиеся русские советы: уникальных=%d, всего=%d", 
+		t.Errorf("Есть дублирующиеся русские советы: уникальных=%d, всего=%d",
 			len(uniqueRuTips), len(ruMessages.Tips))
 	}
 
 	if len(uniqueEnTips) != len(enMessages.Tips) {
-		t.Errorf("Есть дублирующиеся английские советы: уникальных=%d, всего=%d", 
+		t.Errorf("Есть дублирующиеся английские советы: уникальных=%d, всего=%d",
 			len(uniqueEnTips), len(enMessages.Tips))
 	}
 }
@@ -653,7 +656,7 @@ func TestTipsArrays(t *testing.T) {
 func TestGetRandomTipFallback(t *testing.T) {
 	// Тест fallback к обычному совету если Tips пустой
 	messages := &Messages{
-		Tip: "Fallback совет",
+		Tip:  "Fallback совет",
 		Tips: []string{}, // Пустой массив
 	}
 

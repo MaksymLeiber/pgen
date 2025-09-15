@@ -76,7 +76,7 @@ func TestSuccessMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := SuccessMsg(tt.input)
-			
+
 			// Проверяем, что результат содержит исходный текст
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("SuccessMsg() = %q, должно содержать %q", result, tt.expected)
@@ -128,7 +128,7 @@ func TestErrorMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ErrorMsg(tt.input)
-			
+
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("ErrorMsg() = %q, должно содержать %q", result, tt.expected)
 			}
@@ -173,7 +173,7 @@ func TestInfoMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := InfoMsg(tt.input)
-			
+
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("InfoMsg() = %q, должно содержать %q", result, tt.expected)
 			}
@@ -218,7 +218,7 @@ func TestPromptMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := PromptMsg(tt.input)
-			
+
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("PromptMsg() = %q, должно содержать %q", result, tt.expected)
 			}
@@ -263,7 +263,7 @@ func TestGeneratedMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := GeneratedMsg(tt.input)
-			
+
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("GeneratedMsg() = %q, должно содержать %q", result, tt.expected)
 			}
@@ -308,13 +308,18 @@ func TestTitleMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := TitleMsg(tt.input)
-			
+
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("TitleMsg() = %q, должно содержать %q", result, tt.expected)
 			}
 
 			if tt.input != "" && !containsANSICodes(result) {
 				t.Errorf("TitleMsg() должно содержать ANSI коды цвета, получено: %q", result)
+			}
+
+			// Проверяем, что заголовок больше НЕ содержит подчеркивание
+			if tt.input != "" && strings.Contains(result, "\x1b[4m") {
+				t.Errorf("TitleMsg() не должно содержать ANSI код подчеркивания (\\x1b[4m), получено: %q", result)
 			}
 		})
 	}
@@ -353,7 +358,7 @@ func TestSubtleMsg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := SubtleMsg(tt.input)
-			
+
 			if !strings.Contains(result, tt.expected) {
 				t.Errorf("SubtleMsg() = %q, должно содержать %q", result, tt.expected)
 			}
@@ -398,7 +403,7 @@ func TestColorFunctionsWithSpecialCharacters(t *testing.T) {
 		for i, input := range specialChars {
 			t.Run(fmt.Sprintf("%s_SpecialChar_%d", funcName, i+1), func(t *testing.T) {
 				result := fn(input)
-				
+
 				if !strings.Contains(result, input) {
 					t.Errorf("%s() = %q, должно содержать %q", funcName, result, input)
 				}
@@ -422,7 +427,7 @@ func TestColorDisabled(t *testing.T) {
 	color.NoColor = true
 
 	testInput := "Тестовое сообщение"
-	
+
 	functions := map[string]func(string) string{
 		"SuccessMsg":   SuccessMsg,
 		"ErrorMsg":     ErrorMsg,
@@ -436,7 +441,7 @@ func TestColorDisabled(t *testing.T) {
 	for funcName, fn := range functions {
 		t.Run(fmt.Sprintf("%s_NoColor", funcName), func(t *testing.T) {
 			result := fn(testInput)
-			
+
 			// При отключенных цветах результат должен быть равен входной строке
 			if result != testInput {
 				t.Errorf("%s() с отключенными цветами = %q, ожидается %q", funcName, result, testInput)
@@ -460,7 +465,7 @@ func TestAllFunctionsConsistency(t *testing.T) {
 
 	// Тест на консистентность всех функций
 	testInput := "Консистентность"
-	
+
 	functions := []func(string) string{
 		SuccessMsg,
 		ErrorMsg,
@@ -474,7 +479,7 @@ func TestAllFunctionsConsistency(t *testing.T) {
 	for i, fn := range functions {
 		t.Run(fmt.Sprintf("Function_%d_Consistency", i+1), func(t *testing.T) {
 			result := fn(testInput)
-			
+
 			// Все функции должны содержать исходный текст
 			if !strings.Contains(result, testInput) {
 				t.Errorf("Функция %d не содержит исходный текст", i+1)
@@ -519,7 +524,7 @@ func BenchmarkErrorMsg(b *testing.B) {
 
 func BenchmarkAllColorFunctions(b *testing.B) {
 	msg := "Тестовое сообщение для бенчмарка"
-	
+
 	functions := []func(string) string{
 		SuccessMsg,
 		ErrorMsg,
@@ -540,7 +545,7 @@ func BenchmarkAllColorFunctions(b *testing.B) {
 
 func BenchmarkLongMessage(b *testing.B) {
 	longMsg := strings.Repeat("Очень длинное сообщение с множеством символов ", 100)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = SuccessMsg(longMsg)

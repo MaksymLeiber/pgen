@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -49,8 +50,8 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	// Загружаем конфигурацию
 	var err error
-	// Используем английский язык по умолчанию для загрузки конфигурации
-	defaultMessages := i18n.GetMessages(i18n.English, Version)
+	// Используем стандартный язык по умолчанию для загрузки конфигурации
+	defaultMessages := i18n.GetMessages(i18n.DetectLanguage(""), Version)
 	cfg, err = config.Load(defaultMessages)
 	if err != nil {
 		cfg = config.DefaultConfig()
@@ -119,7 +120,9 @@ func runRootCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}()
 
-	fmt.Println(colors.TitleMsg(messages.AppTitle))
+	// Форматируем заголовок с информацией о пользователе
+	titleWithUser := formatTitleWithUser(messages.AppTitle, cfg.Username, messages)
+	fmt.Println(colors.TitleMsg(titleWithUser))
 	fmt.Println(colors.SubtleMsg(messages.AppSubtitle + "\n"))
 
 	if versionFlag {
@@ -152,13 +155,13 @@ func runRootCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if len(masterPassword) == 0 {
+	if masterPassword.IsEmpty() {
 		fmt.Fprintf(os.Stderr, "%s\n", colors.ErrorMsg(messages.Errors.EmptyMaster))
 		os.Exit(1)
 	}
 
 	// Проверка силы мастер-пароля
-	strength := validator.ValidatePasswordStrength(masterPassword, messages)
+	strength := validator.ValidatePasswordStrength(masterPassword.String(), messages)
 	displayPasswordStrength(strength, messages)
 
 	fmt.Print(colors.PromptMsg(messages.EnterServiceName + " "))
@@ -194,12 +197,15 @@ func runRootCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("\n%s %s\n", colors.InfoMsg(messages.PasswordGenerated), colors.GeneratedMsg(password))
-	fmt.Printf("%s %s\n", colors.SubtleMsg(messages.LengthLabel), colors.SubtleMsg(fmt.Sprintf("%d %s", len(password), messages.CharactersLabel)))
+	// Очищаем мастер-пароль из памяти после использования
+	defer masterPassword.Clear()
+
+	fmt.Printf("\n%s %s\n", colors.InfoMsg(messages.PasswordGenerated), colors.GeneratedMsg(password.String()))
+	fmt.Printf("%s %s\n", colors.SubtleMsg(messages.LengthLabel), colors.SubtleMsg(fmt.Sprintf("%d %s", password.Len(), messages.CharactersLabel)))
 
 	// Показ информации о пароле
 	if showInfoFlag || cfg.ShowPasswordInfo {
-		displayPasswordInfo(password, messages)
+		displayPasswordInfo(password.String(), messages)
 	}
 
 	if copyFlag || cfg.DefaultCopy {
@@ -211,7 +217,7 @@ func runRootCommand(cmd *cobra.Command, args []string) {
 
 		// Используем настраиваемый таймаут для очистки
 		timeoutDuration := time.Duration(effectiveTimeout) * time.Second
-		done, err := clipboard.CopyToClipboardWithTimeout(password, timeoutDuration)
+		done, err := clipboard.CopyToClipboardWithTimeout(password.String(), timeoutDuration)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s %v\n", colors.ErrorMsg(messages.Errors.ClipboardError+":"), err)
 		} else {
@@ -692,6 +698,13 @@ func setConfigValue(key, value string, messages *i18n.Messages) error {
 			return fmt.Errorf("%s %v", messages.ConfigInvalidColorOutput, err)
 		}
 		cfg.ColorOutput = val
+	case "username":
+		// Простая валидация - не пустая строка и не только пробелы
+		trimmedValue := strings.TrimSpace(value)
+		if trimmedValue == "" {
+			return fmt.Errorf("%s", messages.ConfigUsernameEmpty)
+		}
+		cfg.Username = trimmedValue
 	default:
 		return fmt.Errorf("%s %s", messages.ConfigUnknownKey, key)
 	}
@@ -705,6 +718,42 @@ func init() {
 	configCmd.AddCommand(configResetCmd)
 	configCmd.AddCommand(configExportCmd)
 	configCmd.AddCommand(configImportCmd)
+}
+
+// formatTitleWithUser форматирует заголовок с информацией о пользователе
+func formatTitleWithUser(appTitle, username string, messages *i18n.Messages) string {
+	// Определяем что показывать
+	userDisplay := username
+	if username == "" || username == "user" {
+		userDisplay = "default"
+	}
+
+	// Создаем красивый формат с локализованным префиксом
+	// Используем фиксированную ширину для заголовка
+	titleLen := len(stripANSI(appTitle))
+	userInfo := fmt.Sprintf("%s [%s]", messages.ProfileLabel, userDisplay)
+
+	// Вычисляем количество пробелов для выравнивания
+	// Стремимся к общей ширине около 50 символов
+	totalWidth := 50
+	userInfoLen := len(userInfo)
+	spacesNeeded := totalWidth - titleLen - userInfoLen
+
+	// Минимум 2 пробела между заголовком и пользователем
+	if spacesNeeded < 2 {
+		spacesNeeded = 2
+	}
+
+	spaces := strings.Repeat(" ", spacesNeeded)
+	return appTitle + spaces + userInfo
+}
+
+// stripANSI удаляет ANSI escape коды для подсчета реальной длины текста
+func stripANSI(text string) string {
+	// Простое удаление ANSI кодов для подсчета длины
+	// Регулярное выражение для ANSI escape последовательностей
+	var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+	return ansiRegex.ReplaceAllString(text, "")
 }
 
 // updateConfigCommandTexts обновляет тексты команд конфигурации

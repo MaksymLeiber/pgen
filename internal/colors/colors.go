@@ -10,7 +10,7 @@ var (
 	Info      = color.New(color.FgCyan, color.Bold)
 	Prompt    = color.New(color.FgBlue, color.Bold)
 	Generated = color.New(color.FgMagenta, color.Bold)
-	Title     = color.New(color.FgWhite, color.Bold, color.Underline)
+	Title     = color.New(color.FgWhite, color.Bold)
 	Subtle    = color.New(color.FgHiBlack)
 )
 

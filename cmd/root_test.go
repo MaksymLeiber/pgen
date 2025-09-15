@@ -307,6 +307,8 @@ func TestSetConfigValue(t *testing.T) {
 		ConfigTimeoutRange:         "Таймаут должен быть >= 0",
 		ConfigInvalidPasswordInfo:  "Неверное значение show_password_info",
 		ConfigInvalidColorOutput:   "Неверное значение color_output",
+		ConfigInvalidUsername:      "Неверное значение username",
+		ConfigUsernameEmpty:        "Имя пользователя не может быть пустым",
 		ConfigUnknownKey:           "Неизвестный ключ",
 	}
 
@@ -410,6 +412,30 @@ func TestSetConfigValue(t *testing.T) {
 			wantError: true,
 		},
 		{
+			name:      "Валидный username",
+			key:       "username",
+			value:     "maksym",
+			wantError: false,
+		},
+		{
+			name:      "Пустой username",
+			key:       "username",
+			value:     "",
+			wantError: true,
+		},
+		{
+			name:      "Username только пробелы",
+			key:       "username",
+			value:     "   ",
+			wantError: true,
+		},
+		{
+			name:      "Username с пробелами по краям",
+			key:       "username",
+			value:     "  maksym  ",
+			wantError: false,
+		},
+		{
 			name:      "Неизвестный ключ",
 			key:       "unknown_key",
 			value:     "value",
@@ -439,7 +465,7 @@ func TestNeedsElevation(t *testing.T) {
 	}()
 
 	result := needsElevation()
-	
+
 	// Результат может быть true или false в зависимости от платформы и прав
 	if result != true && result != false {
 		t.Error("needsElevation должна возвращать булево значение")
@@ -482,7 +508,7 @@ func TestIsWindowsAdmin(t *testing.T) {
 	}()
 
 	result := isWindowsAdmin()
-	
+
 	// Результат может быть true или false
 	if result != true && result != false {
 		t.Error("isWindowsAdmin должна возвращать булево значение")
@@ -499,24 +525,24 @@ func TestUpdateCommandTexts(t *testing.T) {
 		Description: "Генератор детерминированных паролей",
 		Examples:    "Примеры использования",
 		Flags: struct {
-			Lang              string
-			LangDesc          string
-			Length            string
-			LengthDesc        string
-			Copy              string
-			CopyDesc          string
-			ClearTimeout      string
-			ClearTimeoutDesc  string
-			Version           string
-			VersionDesc       string
-			About             string
-			AboutDesc         string
-			Info              string
-			InfoDesc          string
-			Install           string
-			InstallDesc       string
-			Uninstall         string
-			UninstallDesc     string
+			Lang             string
+			LangDesc         string
+			Length           string
+			LengthDesc       string
+			Copy             string
+			CopyDesc         string
+			ClearTimeout     string
+			ClearTimeoutDesc string
+			Version          string
+			VersionDesc      string
+			About            string
+			AboutDesc        string
+			Info             string
+			InfoDesc         string
+			Install          string
+			InstallDesc      string
+			Uninstall        string
+			UninstallDesc    string
 		}{
 			LangDesc:         "Язык интерфейса",
 			LengthDesc:       "Длина пароля",
@@ -554,11 +580,11 @@ func TestUpdateCommandTexts(t *testing.T) {
 func TestDisplayPasswordStrength(t *testing.T) {
 	// Тест функции displayPasswordStrength
 	messages := &i18n.Messages{
-		MasterPasswordStrength:    "Сила мастер-пароля:",
-		PasswordStrengthWeak:      "🔴 Слабый",
-		PasswordStrengthFair:      "🟠 Удовлетворительный",
-		PasswordStrengthGood:      "🟡 Хороший",
-		PasswordStrengthStrong:    "🟢 Сильный",
+		MasterPasswordStrength:     "Сила мастер-пароля:",
+		PasswordStrengthWeak:       "🔴 Слабый",
+		PasswordStrengthFair:       "🟠 Удовлетворительный",
+		PasswordStrengthGood:       "🟡 Хороший",
+		PasswordStrengthStrong:     "🟢 Сильный",
 		PasswordStrengthVeryStrong: "🟢 Очень сильный",
 	}
 
@@ -612,12 +638,139 @@ func TestDisplayPasswordStrength(t *testing.T) {
 func BenchmarkDetectLanguageFromArgs(b *testing.B) {
 	originalArgs := os.Args
 	defer func() { os.Args = originalArgs }()
-	
+
 	os.Args = []string{"pgen", "--lang", "ru"}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = detectLanguageFromArgs()
+	}
+}
+
+func TestFormatTitleWithUser(t *testing.T) {
+	// Тест функции formatTitleWithUser
+	tests := []struct {
+		name     string
+		appTitle string
+		username string
+		expected string
+	}{
+		{
+			name:     "Пустой username - должен показать default",
+			appTitle: "🔑 PGen CLI",
+			username: "",
+			expected: "profile: [default]",
+		},
+		{
+			name:     "Username 'user' - должен показать default",
+			appTitle: "🔑 PGen CLI",
+			username: "user",
+			expected: "profile: [default]",
+		},
+		{
+			name:     "Кастомный username",
+			appTitle: "🔑 PGen CLI",
+			username: "maksym",
+			expected: "profile: [maksym]",
+		},
+		{
+			name:     "Длинный username",
+			appTitle: "🔑 PGen CLI",
+			username: "very_long_username_123",
+			expected: "profile: [very_long_username_123]",
+		},
+		{
+			name:     "Короткий заголовок",
+			appTitle: "PGen",
+			username: "test",
+			expected: "profile: [test]",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := formatTitleWithUser(tt.appTitle, tt.username, &i18n.Messages{ProfileLabel: "profile:"})
+
+			// Проверяем, что результат содержит ожидаемую информацию о профиле
+			if !strings.Contains(result, tt.expected) {
+				t.Errorf("formatTitleWithUser(%q, %q) = %q, должно содержать %q", tt.appTitle, tt.username, result, tt.expected)
+			}
+
+			// Проверяем, что результат содержит исходный заголовок
+			if !strings.Contains(result, tt.appTitle) {
+				t.Errorf("formatTitleWithUser() должно содержать исходный заголовок %q", tt.appTitle)
+			}
+
+			// Проверяем, что результат длиннее исходного заголовка
+			if len(result) <= len(tt.appTitle) {
+				t.Errorf("formatTitleWithUser() должно возвращать строку длиннее исходного заголовка")
+			}
+		})
+	}
+}
+
+func TestStripANSI(t *testing.T) {
+	// Тест функции stripANSI
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Простой текст без ANSI кодов",
+			input:    "Простой текст",
+			expected: "Простой текст",
+		},
+		{
+			name:     "Пустая строка",
+			input:    "",
+			expected: "",
+		},
+		{
+			name:     "Текст с цветными кодами",
+			input:    "\x1b[31mКрасный текст\x1b[0m",
+			expected: "Красный текст",
+		},
+		{
+			name:     "Текст с жирным шрифтом",
+			input:    "\x1b[1mЖирный текст\x1b[0m",
+			expected: "Жирный текст",
+		},
+		{
+			name:     "Текст с подчеркиванием",
+			input:    "\x1b[4mПодчеркнутый текст\x1b[0m",
+			expected: "Подчеркнутый текст",
+		},
+		{
+			name:     "Сложные ANSI коды",
+			input:    "\x1b[31;1;4mКрасный жирный подчеркнутый\x1b[0m",
+			expected: "Красный жирный подчеркнутый",
+		},
+		{
+			name:     "Несколько участков с разными кодами",
+			input:    "\x1b[31mКрасный\x1b[0m обычный \x1b[32mзеленый\x1b[0m",
+			expected: "Красный обычный зеленый",
+		},
+		{
+			name:     "Заголовок с эмодзи и цветом",
+			input:    "\x1b[1m🔑 PGen CLI\x1b[0m",
+			expected: "🔑 PGen CLI",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := stripANSI(tt.input)
+
+			if result != tt.expected {
+				t.Errorf("stripANSI(%q) = %q, ожидается %q", tt.input, result, tt.expected)
+			}
+
+			// Проверяем, что в результате нет ANSI кодов
+			if strings.Contains(result, "\x1b[") {
+				t.Errorf("stripANSI() должно удалить все ANSI коды, но в результате %q еще есть коды", result)
+			}
+		})
 	}
 }
 
@@ -666,7 +819,7 @@ func BenchmarkGetIssueText(b *testing.B) {
 			},
 		},
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = getIssueText("length_too_short", messages)
@@ -719,7 +872,7 @@ func BenchmarkGetSuggestionText(b *testing.B) {
 			},
 		},
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = getSuggestionText("increase_length", messages)

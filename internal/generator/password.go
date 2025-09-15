@@ -6,18 +6,18 @@ import (
 	"math/big"
 
 	"github.com/MaksymLeiber/pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/security"
 	"golang.org/x/crypto/argon2"
 )
 
 const (
-	saltLength = 16
-	// Набор для генерации
+	saltLength      = 16
 	charsetAlphaNum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	charsetSymbols  = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 	charsetFull     = charsetAlphaNum + charsetSymbols
 )
 
-// сонфиг Argon2
+// конфиг Argon2
 type ArgonConfig struct {
 	Time    uint32
 	Memory  uint32
@@ -51,7 +51,7 @@ func NewPasswordGeneratorWithConfig(length int, argonConfig ArgonConfig) *Passwo
 	}
 }
 
-func (pg *PasswordGenerator) GeneratePassword(masterPassword, serviceName, username string, messages *i18n.Messages) (string, error) {
+func (pg *PasswordGenerator) GeneratePassword(masterPassword *security.SecureString, serviceName, username string, messages *i18n.Messages) (*security.SecureString, error) {
 	salt := createSalt(serviceName, username)
 
 	// Определяем параметрыы аrgon2
@@ -72,8 +72,11 @@ func (pg *PasswordGenerator) GeneratePassword(masterPassword, serviceName, usern
 		keyLen = uint32(pg.length * 2) // Удваиваем для запаса
 	}
 
+	// Используем безопасные байты мастер-пароля
+	masterPasswordBytes := masterPassword.Bytes()
+
 	hash := argon2.IDKey(
-		[]byte(masterPassword),
+		masterPasswordBytes,
 		salt,
 		argonTime,
 		argonMemory,
@@ -85,10 +88,17 @@ func (pg *PasswordGenerator) GeneratePassword(masterPassword, serviceName, usern
 	password := pg.generateFromHash(hash)
 
 	if len(password) < pg.length {
-		return "", fmt.Errorf("%s", messages.Errors.HashTooShort)
+		return nil, fmt.Errorf("%s", messages.Errors.HashTooShort)
 	}
 
-	return password[:pg.length], nil
+	// Создаем SecureString из сгенерированного пароля
+	securePassword := security.NewSecureString(password[:pg.length])
+
+	// Очищаем временные данные
+	security.SecureWipe([]byte(password))
+	security.ZeroMemory(hash)
+
+	return securePassword, nil
 }
 
 // generateFromHash генерирует пароль из хеша без потери энтропии

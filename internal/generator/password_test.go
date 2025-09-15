@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/MaksymLeiber/pgen/internal/i18n"
+	"github.com/MaksymLeiber/pgen/internal/security"
 )
 
 func TestNewPasswordGenerator(t *testing.T) {
@@ -73,7 +74,10 @@ func TestGeneratePassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			password, err := pg.GeneratePassword(tt.masterPassword, tt.serviceName, "testuser", messages)
+			masterPassword := security.NewSecureString(tt.masterPassword)
+			defer masterPassword.Clear()
+			
+			password, err := pg.GeneratePassword(masterPassword, tt.serviceName, "testuser", messages)
 
 			if tt.wantError && err == nil {
 				t.Error("GeneratePassword() ожидалась ошибка, получен nil")
@@ -84,12 +88,14 @@ func TestGeneratePassword(t *testing.T) {
 			}
 
 			if !tt.wantError {
-				if len(password) != pg.length {
-					t.Errorf("GeneratePassword() длина пароля = %v, ожидается %v", len(password), pg.length)
+				defer password.Clear()
+				
+				if password.Len() != pg.length {
+					t.Errorf("GeneratePassword() длина пароля = %v, ожидается %v", password.Len(), pg.length)
 				}
 
-				if password == "" {
-					t.Error("GeneratePassword() вернул пустой пароль")
+				if password.IsEmpty() {
+					t.Error("GeneratePassword() пустой пароль")
 				}
 			}
 		})
@@ -100,20 +106,33 @@ func TestGeneratePasswordDeterministic(t *testing.T) {
 	messages := i18n.GetMessages(i18n.English, "test")
 	pg := NewPasswordGenerator(16)
 
-	masterPassword := "test123"
-	serviceName := "example.com"
+	masterPassword := security.NewSecureString("testmaster123")
+	defer masterPassword.Clear()
+	serviceName := "github.com"
+	username := "testuser"
 
 	// Генерируем пароль несколько раз
-	password1, err1 := pg.GeneratePassword(masterPassword, serviceName, "testuser", messages)
-	password2, err2 := pg.GeneratePassword(masterPassword, serviceName, "testuser", messages)
-	password3, err3 := pg.GeneratePassword(masterPassword, serviceName, "testuser", messages)
-
-	if err1 != nil || err2 != nil || err3 != nil {
-		t.Fatalf("GeneratePassword() ошибки: %v, %v, %v", err1, err2, err3)
+	password1, err := pg.GeneratePassword(masterPassword, serviceName, username, messages)
+	if err != nil {
+		t.Fatalf("GeneratePassword() ошибка: %v", err)
 	}
+	defer password1.Clear()
 
-	if password1 != password2 || password2 != password3 {
-		t.Errorf("GeneratePassword() не детерминирован: %v, %v, %v", password1, password2, password3)
+	password2, err := pg.GeneratePassword(masterPassword, serviceName, username, messages)
+	if err != nil {
+		t.Fatalf("GeneratePassword() ошибка: %v", err)
+	}
+	defer password2.Clear()
+
+	password3, err := pg.GeneratePassword(masterPassword, serviceName, username, messages)
+	if err != nil {
+		t.Fatalf("GeneratePassword() ошибка: %v", err)
+	}
+	defer password3.Clear()
+
+	// Все пароли должны быть одинаковыми
+	if !password1.SecureCompare(password2) || !password2.SecureCompare(password3) {
+		t.Errorf("Пароли не детерминированы: %s, %s, %s", password1.String(), password2.String(), password3.String())
 	}
 }
 
@@ -121,15 +140,23 @@ func TestGeneratePasswordDifferentInputs(t *testing.T) {
 	messages := i18n.GetMessages(i18n.English, "test")
 	pg := NewPasswordGenerator(16)
 
-	password1, _ := pg.GeneratePassword("master1", "service1", "user1", messages)
-	password2, _ := pg.GeneratePassword("master2", "service1", "user1", messages)
-	password3, _ := pg.GeneratePassword("master1", "service2", "user1", messages)
+	master1 := security.NewSecureString("master1")
+	defer master1.Clear()
+	master2 := security.NewSecureString("master2")
+	defer master2.Clear()
 
-	if password1 == password2 {
+	password1, _ := pg.GeneratePassword(master1, "service1", "user1", messages)
+	defer password1.Clear()
+	password2, _ := pg.GeneratePassword(master2, "service1", "user1", messages)
+	defer password2.Clear()
+	password3, _ := pg.GeneratePassword(master1, "service2", "user1", messages)
+	defer password3.Clear()
+
+	if password1.SecureCompare(password2) {
 		t.Error("Разные мастер-пароли должны генерировать разные пароли")
 	}
 
-	if password1 == password3 {
+	if password1.SecureCompare(password3) {
 		t.Error("Разные имена сервисов должны генерировать разные пароли")
 	}
 }
@@ -146,14 +173,18 @@ func TestGeneratePasswordWithCustomConfig(t *testing.T) {
 	}
 
 	pg := NewPasswordGeneratorWithConfig(20, config)
-	password, err := pg.GeneratePassword("testmaster", "testservice", "testuser", messages)
+	masterPassword := security.NewSecureString("testmaster")
+	defer masterPassword.Clear()
+	
+	password, err := pg.GeneratePassword(masterPassword, "testservice", "testuser", messages)
 
 	if err != nil {
 		t.Fatalf("GeneratePassword() ошибка: %v", err)
 	}
+	defer password.Clear()
 
-	if len(password) != 20 {
-		t.Errorf("Длина пароля = %v, ожидается %v", len(password), 20)
+	if password.Len() != 20 {
+		t.Errorf("Длина пароля = %v, ожидается %v", password.Len(), 20)
 	}
 }
 
@@ -255,10 +286,15 @@ func TestGenerateFromHash(t *testing.T) {
 func BenchmarkGeneratePassword(b *testing.B) {
 	messages := i18n.GetMessages(i18n.English, "test")
 	pg := NewPasswordGenerator(16)
+	masterPassword := security.NewSecureString("benchmark")
+	defer masterPassword.Clear()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = pg.GeneratePassword("benchmark", "test", "benchuser", messages)
+		password, _ := pg.GeneratePassword(masterPassword, "test", "benchuser", messages)
+		if password != nil {
+			password.Clear()
+		}
 	}
 }
 
@@ -274,9 +310,14 @@ func BenchmarkGeneratePasswordFast(b *testing.B) {
 	}
 
 	pg := NewPasswordGeneratorWithConfig(16, config)
+	masterPassword := security.NewSecureString("benchmark")
+	defer masterPassword.Clear()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = pg.GeneratePassword("benchmark", "test", "benchuser", messages)
+		password, _ := pg.GeneratePassword(masterPassword, "test", "benchuser", messages)
+		if password != nil {
+			password.Clear()
+		}
 	}
 }

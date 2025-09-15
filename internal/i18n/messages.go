@@ -18,8 +18,8 @@ func (m *Messages) GetRandomTip() string {
 	if len(m.Tips) == 0 {
 		return m.Tip // Фолбэк к обычному совету
 	}
-	
-	// генератор случайных чисел на основе времени для подсказок 
+
+	// генератор случайных чисел на основе времени для подсказок
 	rand.Seed(time.Now().UnixNano())
 	index := rand.Intn(len(m.Tips))
 	return m.Tips[index]
@@ -169,7 +169,10 @@ type Messages struct {
 	ConfigInvalidClearTimeout  string
 	ConfigInvalidPasswordInfo  string
 	ConfigInvalidColorOutput   string
+	ConfigInvalidUsername      string
+	ConfigUsernameEmpty        string
 	ConfigUnknownKey           string
+	ProfileLabel               string
 	ConfigLengthRange          string
 	ConfigLanguageValues       string
 	ConfigCharsetValues        string
@@ -346,7 +349,10 @@ func GetMessages(lang Language, version string) *Messages {
 			ConfigInvalidClearTimeout:  "Неверное значение default_clear_timeout:",
 			ConfigInvalidPasswordInfo:  "Неверное значение show_password_info:",
 			ConfigInvalidColorOutput:   "Неверное значение color_output:",
+			ConfigInvalidUsername:      "Неверное значение username:",
+			ConfigUsernameEmpty:        "Имя пользователя не может быть пустым",
 			ConfigUnknownKey:           "Неизвестный ключ конфигурации:",
+			ProfileLabel:               "профиль:",
 			ConfigLengthRange:          "default_length должен быть от 4 до 128",
 			ConfigLanguageValues:       "default_language должен быть 'ru', 'en' или 'auto'",
 			ConfigCharsetValues:        "character_set должен быть 'alphanumeric', 'alphanumeric_symbols' или 'symbols_only'",
@@ -633,7 +639,10 @@ func GetMessages(lang Language, version string) *Messages {
 			ConfigInvalidClearTimeout:  "Invalid default_clear_timeout value:",
 			ConfigInvalidPasswordInfo:  "Invalid show_password_info value:",
 			ConfigInvalidColorOutput:   "Invalid color_output value:",
+			ConfigInvalidUsername:      "Invalid username value:",
+			ConfigUsernameEmpty:        "Username cannot be empty",
 			ConfigUnknownKey:           "Unknown configuration key:",
+			ProfileLabel:               "profile:",
 			ConfigLengthRange:          "default_length must be between 4 and 128",
 			ConfigLanguageValues:       "default_language must be 'ru', 'en' or 'auto'",
 			ConfigCharsetValues:        "character_set must be 'alphanumeric', 'alphanumeric_symbols', or 'symbols_only'",
